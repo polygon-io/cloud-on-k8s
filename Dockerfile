@@ -19,6 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 		go build \
             -mod readonly \
 			-ldflags "$GO_LDFLAGS" -tags="$GO_TAGS" -a \
+			-gcflags "-N -l" \
 			-o elastic-operator github.com/elastic/cloud-on-k8s/cmd
 
 # Copy the controller-manager into a thin image
@@ -32,6 +33,9 @@ RUN set -x \
 WORKDIR /eck
 USER 101
 
+EXPOSE 40000
+
 COPY --from=builder /go/src/github.com/elastic/cloud-on-k8s/elastic-operator .
-ENTRYPOINT ["./elastic-operator"]
+
+ENTRYPOINT ["/usr/local/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "exec", "./elastic-operator"]
 CMD ["manager"]

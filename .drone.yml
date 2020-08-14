@@ -1,0 +1,29 @@
+---
+kind: pipeline
+type: docker
+name: push
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: docker
+  image: plugins/docker
+  settings:
+    password:
+      from_secret: dockerhub_password
+    repo: polygonio/cloud-on-k8s-debug
+    tag:
+    - ${DRONE_BRANCH/master/latest}
+    - ${DRONE_COMMIT}
+    username:
+      from_secret: dockerhub_username
+
+trigger:
+  branch:
+  - debug
+  event:
+  - push
+
+...
